@@ -67,3 +67,27 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# --- 项目特定忽略项 ---
+# 忽略编译出的主程序
+main
+
+# 忽略 perf 性能分析产生的大型二进制文件
+perf.data
+perf.data.old
+
+# 忽略服务器运行日志和错误输出
+test.o
+test.e
+
+# 忽略生成的汇编文件
+*.s
+
+# 忽略latex编译产生的临时文件
+*.aux
+*.log
+*.toc
+*.synctex.gz
+*.out
+*.fdb_latexmk
+*.fls
