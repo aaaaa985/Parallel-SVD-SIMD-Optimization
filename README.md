@@ -1,2 +1,44 @@
-# Parallel-SVD-SIMD-Optimization
-SIMD-accelerated Singular Value Decomposition (SVD) implementation using ARM NEON intrinsics. Course assignment for Parallel Programming at Nankai University (NKU).
+# 基于 SIMD 的 SVD 矩阵分解并行优化实现
+
+本项目是**南开大学《并行程序设计》课程**的实验作业。核心任务是针对矩阵奇异值分解（SVD）算法中的性能瓶颈，在 ARM 架构环境下利用 SIMD（单指令多数据）技术进行深度并行优化。
+
+## 项目简介
+
+本项目实现了 **Golub-Kahan (GKH)** SVD 分解算法。通过使用 **ARM NEON Intrinsics** 指令集，对算法中计算密集的算子进行了向量化重构，旨在华为鲲鹏 920 处理平台上实现显著的性能提升。
+
+### 核心优化点
+- **Householder 上二对角化向量化**：针对 Rank-1 更新（$B = B - \beta vw^T$）实现了深度的 SIMD 映射。
+- **GKH 迭代与 Bulge Chasing 优化**：针对 Givens 旋转进行了行/列更新的向量化，并引入指针预取技术。
+- **底层硬件映射**：显式调用 `vfmaq_f64` 指令实现 FMA（融合乘加），提高指令吞吐量。
+- **循环展开 (Loop Unrolling)**：采用 8 路手工循环展开，有效掩盖内存访问延迟，减少分支预测失败。
+
+## 性能表现
+
+在 1000 × 1000 规模的随机矩阵测试中，本项目取得了如下成果：
+- **上二对角化阶段加速比**：较初始串行版本提升了 **34.54%**。
+- **整体性能提升**：在抵消了 GKH 阶段手动优化带来的开销后，总耗时降低了 **7.01%**。
+- **数值稳定性**：在大幅提升速度的同时，重构误差严格保持在 $10^{-10}$ 级。
+
+## 实验环境
+
+- **操作系统**: OpenEuler
+- **硬件架构**: AArch64 (ARMv8)
+- **处理器**: 华为鲲鹏 920 (8 核计算节点)
+- **编译器**: GCC 10.3.1
+- **编译选项**: `-O2 -march=armv8-a`
+
+## 文件说明
+
+- `bidiagonalization.cpp`: 实现 Householder 变换上二对角化及 SIMD 优化。
+- `gkh.cpp`: 实现隐式 QR 迭代及 Bulge Chasing 优化。
+- `matrix.h`: 基础矩阵类及内存管理。
+- `test.sh`: 官方提供的作业提交与测评脚本。
+
+## 运行方式
+
+本项目遵循课程标准的脚本提交规范：
+
+```bash
+# 运行 SIMD 优化测试 (LAB 1)
+# 参数格式：[实验编号] [节点数] [核心数] [优化等级] [随机种子]
+bash test.sh 1 1 8 -O O2 -s 20260410
